@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build" name="toolkit-java">
+    <property environment="env"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.6"/>
+    <property name="source" value="1.6"/>
+    
+	<path id="toolkit-java.classpath">
+        <pathelement location="bin"/>
+        <pathelement location="lib/mongo-java-driver-2.13.2.jar"/>
+    </path>
+	
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+	
+    <target name="doc" description="Generate the documentation.">
+        <mkdir dir="doc"/>
+    	<javadoc sourcepath="src/" destdir="doc/">
+            <classpath refid="toolkit-java.classpath" />
+        	<link href="http://docs.oracle.com/javase/7/docs/api/"/>
+    		<link href="http://api.mongodb.org/java/3.0/"/>
+    	</javadoc>
+    </target>
+              	
+    <target name="clean">
+        <delete dir="bin"/>
+		<delete dir="doc"/>
+    	<delete file="wekeypedia.jar"/> 
+    </target>
+	
+    <target depends="init" name="build">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
+            <src path="src"/>
+            <classpath refid="toolkit-java.classpath"/>
+        </javac>
+    </target>
+	
+    <target name="Main">
+        <java classname="net.wekeypedia.main.Main" failonerror="true" fork="yes">
+            <classpath refid="toolkit-java.classpath"/>
+        </java>
+    </target>
+	
+    <target name="jar" description="Package into executable JAR." depends="build">
+        <jar destfile="wekeypedia.jar" basedir="bin" compress="true">
+	    	<manifest>
+	    	      <attribute name="Main-Class" value="net.wekeypedia.main.Main"/>
+	    	      <attribute name="Class-Path" value="lib/mongo-java-driver-2.13.2.jar"/>
+	        </manifest>
+        </jar>
+    </target>
+	
+</project>

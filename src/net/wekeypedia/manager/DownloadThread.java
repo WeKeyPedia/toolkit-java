@@ -23,6 +23,7 @@ public class DownloadThread extends Thread{
 	public DownloadThread(JobManager jm, ManagerInterface mi) {
 		super();
 		this.mi=mi;
+		this.jm=jm;
 		this.downloadNames = new LinkedList<String>();
 	}
 
@@ -34,14 +35,10 @@ public class DownloadThread extends Thread{
 		while (jm.hasAnOtherJob()){
 			List<String> dlnames=jm.getAJob();
 			for (String name:dlnames){
-				try{
 					wp=mi.getWikiPage(jm.getDomain(),name);
 					mi.saveWikiPage(wp);
 					if (wp!=null) downloadNames.add(name);
-				}catch(Exception e){
-					e.printStackTrace();
-					System.err.println("Error >> "+name);
-				}
+
 			}
 		}
 	}

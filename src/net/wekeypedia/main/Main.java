@@ -15,9 +15,18 @@ import net.wekeypedia.manager.ManagerInterface;
 import net.wekeypedia.manager.MongoManager;
 
 
-
+/** This class allowed the use of the toolkit through command line.
+ * 
+ * @author jeremie
+ *
+ */
 public class Main {
-	
+	/** Read the list of titles of the pages to download.
+	 * 
+	 * @param is
+	 * @return
+	 * @throws IOException
+	 */
 	public static List<String> getListOfNames(InputStream is) throws IOException{
 		List<String> res = new LinkedList<String>();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(is));
@@ -30,7 +39,9 @@ public class Main {
 		return res;
 	}
 	
-	
+	/** Display the options of the command line.
+	 * 
+	 */
 	public static void usage(){
 		System.out.println("Usage: wikeypedia [OPTIONS]");
 		System.out.println();
@@ -69,13 +80,13 @@ public class Main {
 				if(args[i].equals("-mongoDB")) mongoDB = args[++i];
 				if(args[i].equals("-mongoCol"))	mongoCollection = args[++i];
 			}
-			
+
 			List<String> listNames = null;
 			if (file==null) listNames =	Main.getListOfNames(System.in);
 			else listNames = Main.getListOfNames(new FileInputStream(file));
 			int jobsize=1+listNames.size()*10/nbThread;
 			JobManager JM = new JobManager(domain,listNames,jobsize);
-			
+
 			ManagerInterface MI = null;
 			if (mongo){
 				MongoManager MM = new MongoManager();
@@ -92,8 +103,9 @@ public class Main {
 			List<DownloadThread> threads = new LinkedList<DownloadThread>();
 			for (int j=0;j<nbThread;j++) threads.add(new DownloadThread(JM,MI));
 			for (DownloadThread df:threads) df.start();
-			for (DownloadThread df:threads) df.wait();			
+			for (DownloadThread df:threads) df.join();			
 		}catch(Exception e){
+			e.printStackTrace();
 			Main.usage();
 		}
 	}

@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.9.3
+Created-By: 1.7.0_79-b14 (Oracle Corporation)
+Main-Class: net.wekeypedia.main.Main
+Class-Path: lib/mongo-java-driver-2.13.2.jar
+

@@ -16,14 +16,16 @@ public class JobManager {
 	
 	public JobManager(String domain, List<String> names,int jobSize){
 		this.domain=domain;
-		works=new HashMap<Integer,List<String>>();	
-		for (int i=0;i<=names.size()/jobSize;i++){
-			works.put(i,new LinkedList<String>());
-		}
-		int i=0;
-		for (String name :names) {
-			works.get(i%works.size()).add(name);
-			i++;
+		works=new HashMap<Integer,List<String>>();
+		if (names!=null && names.size()>0){
+			for (int i=0;i<=names.size()/jobSize;i++){
+				works.put(i,new LinkedList<String>());
+			}
+			int i=0;
+			for (String name :names) {
+				works.get(i%works.size()).add(name);
+				i++;
+			}
 		}
 	}
 	
