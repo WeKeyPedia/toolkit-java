@@ -34,11 +34,18 @@ public class DownloadThread extends Thread{
 		WikiPage wp=null;
 		while (jm.hasAnOtherJob()){
 			List<String> dlnames=jm.getAJob();
-			for (String name:dlnames){
-					wp=mi.getWikiPage(jm.getDomain(),name);
-					mi.saveWikiPage(wp);
-					if (wp!=null) downloadNames.add(name);
-
+			if (dlnames!=null){
+				for (String name:dlnames){
+					try{
+						wp=mi.getWikiPage(jm.getDomain(),name);
+						mi.saveWikiPage(wp);
+						if (wp!=null) downloadNames.add(name);
+					}catch(Exception e){
+						System.out.println("Error with: \""+wp.get("title")+"\"");
+						e.printStackTrace();
+					}
+	
+				}
 			}
 		}
 	}

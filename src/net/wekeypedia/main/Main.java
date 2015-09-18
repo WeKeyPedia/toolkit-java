@@ -84,7 +84,7 @@ public class Main {
 			List<String> listNames = null;
 			if (file==null) listNames =	Main.getListOfNames(System.in);
 			else listNames = Main.getListOfNames(new FileInputStream(file));
-			int jobsize=1+listNames.size()*10/nbThread;
+			int jobsize=1+listNames.size()/(10*nbThread);
 			JobManager JM = new JobManager(domain,listNames,jobsize);
 
 			ManagerInterface MI = null;
@@ -94,6 +94,7 @@ public class Main {
 				if (mongoPort!=-1) MM.setPort(mongoPort);
 				if (mongoDB!=null) MM.setHost(mongoDB);
 				if (mongoCollection!=null) MM.setHost(mongoCollection);
+				MM.connect();
 				MI = MM;
 			}else{
 				FolderManager FM = new FolderManager(folder);
@@ -102,7 +103,9 @@ public class Main {
 			
 			List<DownloadThread> threads = new LinkedList<DownloadThread>();
 			for (int j=0;j<nbThread;j++) threads.add(new DownloadThread(JM,MI));
-			for (DownloadThread df:threads) df.start();
+			for (DownloadThread df:threads){
+				df.start();
+			}
 			for (DownloadThread df:threads) df.join();			
 		}catch(Exception e){
 			e.printStackTrace();

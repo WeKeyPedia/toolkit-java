@@ -1,11 +1,22 @@
 package net.wekeypedia.elements;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 
 
 /** This class is used to fetch and store the data related to a wikipedia page.
@@ -172,6 +183,7 @@ public class WikiPage extends WikiElement{
 		params.put( "action","query");
 		params.put( "titles", (String) this.get("title"));
 		params.put( "prop", "links");
+		params.put( "plnamespace", "0");
 		params.put( "pllimit", "max");
 		params.put( "format", "json");
 		params.put( "continue", "");
@@ -215,6 +227,7 @@ public class WikiPage extends WikiElement{
 		params.put( "action","query");
 		params.put( "bltitle", (String) this.get("title"));
 		params.put( "list", "backlinks");
+		params.put( "blnamespace", "0");
 		params.put( "bllimit", "max");
 		params.put( "format", "json");
 		params.put( "continue", "");
@@ -222,19 +235,75 @@ public class WikiPage extends WikiElement{
 
 		this.fetchList(params);
 	}
+	
+
+	/** Fetch the daily page views statistics from http://stats.grok.se/.
+	 * @param from : starting date must be at least December 2007 and the format "yyyyMM"
+	 * @param to : ending date. If null then current date is used. The format must be "yyyyMM"
+	 * @throws IOException : if a problem occurs in the reading the result of the query.
+	 * @throws ParseException : if problem with the format of the date
+	 */
+	public void fetchPageviews(String from, String to) throws IOException, ParseException {
+		String base_url = "http://stats.grok.se/json/"+this.get("domain");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMM");
+		Date startDate = sdf.parse(from);
+		Date endDate;
+		
+		if (to==null){
+			endDate = new Date();
+		}else{
+			endDate = sdf.parse(to);
+		}
+		
+		GregorianCalendar current = new  GregorianCalendar();
+		current.setTime(startDate);
+		
+		GregorianCalendar end = new  GregorianCalendar();
+		end.setTime(endDate);
+	
+		DBObject pageviews = new BasicDBObject();
+
+		
+		while ( end.compareTo(current)>=0){
+			String addr = base_url+"/"+sdf.format(current.getTime())+"/"+this.get("title");
+			
+			URL url = new URL(addr);
+			URLConnection connection = url.openConnection();
+			InputStreamReader isr = new InputStreamReader(connection.getInputStream());
+			BufferedReader br = new BufferedReader(isr);
+
+			String line;
+			String content = "";
+			while (	(line = br.readLine())!=null)
+				content+=line;
+			br.close();
+
+			DBObject obj = (DBObject) JSON.parse(content);
+			DBObject views = (DBObject) obj.get("daily_views");
+			pageviews.putAll(views);
+			
+			current.add(Calendar.MONTH, 1);
+		}
+		
+		
+		
+		this.put("pageviews",pageviews);
+	}
 
 
-/*	public static void main(String[] args) throws IOException{
-		WikiPage wp = new WikiPage("en","Algorithm");
+	public static void main(String[] args) throws IOException, ParseException{
+		WikiPage wp = new WikiPage("en","Digital_object_identifier");
 		wp.fetchInfo();
 		wp.resolveRedirects();
 		if (!wp.containsField("redirects_to")){
+			wp.fetchPageviews("201502", "201502");
 			wp.fetchBacklinks();
-			wp.fetchCategories();
+			//wp.fetchCategories();
 			wp.fetchLinks();
-			wp.fetchRevisions();
+			//wp.fetchRevisions();
 		}
-		wp.print();	
-	}*/
+		System.out.println(((BasicDBList) wp.get("links")).size());
+		//wp.print();	
+	}
 	
 }

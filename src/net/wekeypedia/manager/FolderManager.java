@@ -69,7 +69,7 @@ public class FolderManager implements ManagerInterface {
 				wp = new WikiPage(domain,title);
 				wp.fetchInfo();
 				wp.resolveRedirects();
-				if (!wp.containsField("redirects_to")){
+				if (!wp.containsField("missing") && !wp.containsField("redirects_to")){
 					wp.fetchLinks();
 					wp.fetchBacklinks();
 					wp.fetchRevisions();
